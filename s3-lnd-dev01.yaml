@@ -1,7 +1,7 @@
-Parameters:
-  BucketName:
-    Type: String
-    Description: Name for S3 bucket 
+# Parameters:
+#   BucketName:
+#     Type: String
+#     Description: Name for S3 bucket 
 
 
 
@@ -14,7 +14,8 @@ Resources:
         ServerSideEncryptionConfiguration: 
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: 'AES256'
-      BucketName: !Ref BucketName
+      # BucketName: !Ref BucketName
+      BucketName: "Built-by-cf"
       ObjectLockEnabled: false
       OwnershipControls:
         Rules:
