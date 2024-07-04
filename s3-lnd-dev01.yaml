@@ -15,7 +15,7 @@ Resources:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: 'AES256'
       # BucketName: !Ref BucketName
-      BucketName: "Built-by-cf"
+      BucketName: "s3-lnd-dev01"
       ObjectLockEnabled: false
       OwnershipControls:
         Rules:
