@@ -15,7 +15,7 @@ Resources:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: 'AES256'
       # BucketName: !Ref BucketName
-      BucketName: "s3-lnd-dev01-test"
+      BucketName: "s3-lnd-dev01-test-demo"
       ObjectLockEnabled: false
       OwnershipControls:
         Rules:
