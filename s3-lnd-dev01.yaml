@@ -6,7 +6,7 @@
 
 
 Resources:
-  s3-lnd-dev01:
+  s3lnddev01:
     Type: AWS::S3::Bucket
     Properties:
       AccessControl: BucketOwnerFullControl
