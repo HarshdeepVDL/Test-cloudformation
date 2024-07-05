@@ -1,0 +1,84 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: CloudFormation template to create EC2 instances, security groups, and EBS volumes
+
+# Parameters:
+#   InstanceType:
+#     Type: String
+#     Default: t3.micro
+#     Description: EC2 instance type
+#   KeyName:
+#     Type: AWS::EC2::KeyPair::KeyName
+#     Default: KeyPair-EC2-template-test
+#     Description: Name of the EC2 Key Pair
+#   ImageId:
+#     Type: AWS::EC2::Image::Id
+#     Default: ami-052387465d846f3fc
+#     Description: EC2 instance image ID
+#   SubnetId:
+#     Type: AWS::EC2::Subnet::Id
+#     Default: subnet-0d205e76098039f3a
+#     Description: ID of the subnet for the EC2 instance
+#   VpcId:
+#     Type: AWS::EC2::VPC::Id
+#     Default: vpc-0aedf2952ee21c8a8
+#     Description: ID of the VPC
+#   IamInstanceProfileArn:
+#     Type: String
+#     Default: EC2CFRole
+#     Description: ARN of the IAM instance profile
+#   SecurityGroupName:
+#     Type: String
+#     Default: launch-wizard-1
+#     Description: Name of the security group
+#   SnapshotIdForVolume:
+#     Type: String
+#     Default: "snap-0ee4b8cfbe15fa103"
+#     Description: Enter the Snapshot Id for Root Volume  
+
+Resources:
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: "t3.micro" #!Ref InstanceType
+      ImageId: "ami-052387465d846f3fc" #!Ref ImageId
+      KeyName: "KeyPair-EC2-template-test" #!Ref KeyName
+      SubnetId: "subnet-05bfa082f3be16a19" #!Ref SubnetId
+      IamInstanceProfile: "EC2CFRole" #!Ref IamInstanceProfileArn
+      BlockDeviceMappings:
+        - DeviceName: "/dev/xvda"
+          Ebs:
+            Encrypted: false
+            VolumeSize: 8
+            VolumeType: "gp2"
+      SecurityGroupIds:
+        - !Ref InstanceSecurityGroup
+      Tags:
+        - Key: Name
+          Value: EC2-CF
+      HibernationOptions:
+        Configured: false
+      EnclaveOptions:
+        Enabled: false
+      SourceDestCheck: true
+
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "test-ec2-sg"
+      VpcId: "vpc-0aedf2952ee21c8a8" #!Ref VpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+
+Outputs:
+  InstanceId:
+    Description: "The Instance ID of the EC2 instance"
+    Value: !Ref EC2Instance
+  SecurityGroup1Id:
+    Description: "The Security Group ID for EC2SecurityGroup"
+    Value: !Ref InstanceSecurityGroup
