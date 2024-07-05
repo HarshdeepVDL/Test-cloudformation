@@ -40,7 +40,7 @@ Resources:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: "t3.micro" #!Ref InstanceType
-      ImageId: "ami-052387465d846f3fc" #!Ref ImageId
+      ImageId: "ami-09f6da726716a4ca6" #!Ref ImageId
       KeyName: "KeyPair-EC2-template-test" #!Ref KeyName
       SubnetId: "subnet-05bfa082f3be16a19" #!Ref SubnetId
       IamInstanceProfile: "EC2CFRole" #!Ref IamInstanceProfileArn
