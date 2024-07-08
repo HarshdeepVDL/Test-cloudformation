@@ -3,7 +3,7 @@
         "InstanceType": "t3.micro",
         "KeyName": "KeyPair-EC2-template-test",
         "ImageId": "ami-052387465d846f3fc",
-        "SubnetId": "subnet-0d205e76098039f3a",
+        "SubnetId": "subnet-05bfa082f3be16a19",
         "VpcId": "vpc-0aedf2952ee21c8a8",
         "IamInstanceProfileArn": "EC2CFRole"
     }
