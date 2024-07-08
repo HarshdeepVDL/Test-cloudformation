@@ -1,8 +1,10 @@
-{
-    "InstanceType": "t3.micro",
-    "KeyName": "KeyPair-EC2-template-test",
-    "ImageId": "ami-052387465d846f3fc",
-    "SubnetId": "subnet-0d205e76098039f3a",
-    "VpcId": "vpc-0aedf2952ee21c8a8",
-    "IamInstanceProfileArn": "EC2CFRole"
+{  
+    "Parameters" :{
+        "InstanceType": "t3.micro",
+        "KeyName": "KeyPair-EC2-template-test",
+        "ImageId": "ami-052387465d846f3fc",
+        "SubnetId": "subnet-0d205e76098039f3a",
+        "VpcId": "vpc-0aedf2952ee21c8a8",
+        "IamInstanceProfileArn": "EC2CFRole"
+    }
 }
