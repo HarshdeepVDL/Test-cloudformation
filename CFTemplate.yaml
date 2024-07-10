@@ -1,0 +1,197 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "CloudFormation template to create an EC2 instance with specified parameters, security groups, and EBS"
+Parameters:
+    VpcId:
+        Type: String
+        # Default: "vpc-04a51508b738a6dd4"
+        Default: "vpc-0aedf2952ee21c8a8"
+        Description: "VPC ID for the instances and security groups"
+    SubnetId:
+        Type: String
+        # Default: "subnet-0ebff18949855b623"
+        Default: "subnet-05bfa082f3be16a19"
+        Description: "Subnet ID for the instances"
+    ImageId1:
+        Type: String
+        # Default: "ami-02ba094db0de328c2"
+        Default: "ami-09f6da726716a4ca6"
+        Description: "AMI ID for the first EC2 instance"
+    ImageId2:
+        Type: String
+        # Default: "ami-0c38ffb7026461cc9"
+        Default: "ami-09f6da726716a4ca6"
+        Description: "AMI ID for the second EC2 instance"
+    InstanceType1:
+        Type: String
+        # Default: "t2.medium"
+        Default: "t3.micro"
+        Description: "Instance type for the first EC2 instance"
+    InstanceType2:
+        Type: String
+        # Default: "t2.2xlarge"
+        Default: "t3.micro"
+        Description: "Instance type for the second EC2 instance"
+    # SnapshotId1:
+    #     Type: String
+    #     Default: "snap-09bf0af617131d929"
+    #     Description: "Snapshot ID for the first EBS volume"
+    # SnapshotId2:
+    #     Type: String
+    #     Default: "snap-076fecc234be845f3"
+    #     Description: "Snapshot ID for the second EBS volume"
+    VolumeSize:
+        Type: Number
+        Default: 50
+        Description: "Size of the EBS volume in GB"
+    VolumeType:
+        Type: String
+        Default: "gp2"
+        Description: "Type of the EBS volume"
+    IamInstanceProfile:
+        Type: String
+        # Default: "ec2-desktop-setup-SsmInstanceProfile-2YD2aEtFUTjO"
+        Default: "EC2CFRole"
+        Description: "IAM Instance Profile for the EC2 instances"
+Resources:
+    EC2SecurityGroup:
+        Type: "AWS::EC2::SecurityGroup"
+        Properties:
+            GroupDescription: "Test for Inspection"
+            GroupName: "Test-Inspection"
+            VpcId: !Ref VpcId
+            SecurityGroupIngress: 
+              - 
+                CidrIp: "0.0.0.0/0"
+                IpProtocol: "-1"
+              - 
+                CidrIp: "10.61.0.0/21"
+                Description: "SSM"
+                FromPort: 443
+                IpProtocol: "tcp"
+                ToPort: 443
+            SecurityGroupEgress: 
+              - 
+                CidrIp: "0.0.0.0/0"
+                IpProtocol: "-1"
+
+    EC2SecurityGroup2:
+        Type: "AWS::EC2::SecurityGroup"
+        Properties:
+            GroupDescription: "Security Group for EC2 gateway"
+            GroupName: "ec2-gateway-sg-dev01"
+            VpcId: !Ref VpcId
+            SecurityGroupIngress: 
+              - 
+                CidrIp: "10.61.0.0/21"
+                Description: "SSM"
+                FromPort: 3389
+                IpProtocol: "tcp"
+                ToPort: 3389
+            SecurityGroupEgress: 
+              - 
+                CidrIp: "0.0.0.0/0"
+                IpProtocol: "-1"
+
+    EC2SecurityGroup3:
+        Type: "AWS::EC2::SecurityGroup"
+        Properties:
+            GroupDescription: "Allow RDP access to EC2 desktop and gateway"
+            GroupName: "ec2-desktop-dev01-sg"
+            VpcId: !Ref VpcId
+            SecurityGroupIngress: 
+              - 
+                CidrIp: "0.0.0.0/0"
+                Description: "airflow"
+                FromPort: 8080
+                IpProtocol: "tcp"
+                ToPort: 8080
+              - 
+                CidrIp: "0.0.0.0/0"
+                Description: "ssh"
+                FromPort: 22
+                IpProtocol: "tcp"
+                ToPort: 22
+            SecurityGroupEgress: 
+              - 
+                CidrIp: "0.0.0.0/0"
+                IpProtocol: "-1"
+
+    EC2Instance:
+        Type: "AWS::EC2::Instance"
+        Properties:
+            ImageId: !Ref ImageId1
+            InstanceType: !Ref InstanceType1
+            KeyName: "EC2-Windows-Keypair"
+            # AvailabilityZone: !GetAtt EC2Instance2.AvailabilityZone
+            Tenancy: "default"
+            SubnetId: !Ref SubnetId
+            EbsOptimized: false
+            SecurityGroupIds: 
+              - !Ref EC2SecurityGroup2
+            SourceDestCheck: true
+            BlockDeviceMappings: 
+              - 
+                DeviceName: "/dev/sda1"
+                Ebs: 
+                    Encrypted: true
+                    VolumeSize: !Ref VolumeSize
+                    # SnapshotId: !Ref SnapshotId1
+                    VolumeType: !Ref VolumeType
+                    DeleteOnTermination: true
+              - 
+                DeviceName: "xvdb"
+                Ebs: 
+                    Encrypted: true
+                    VolumeSize: 100
+                    VolumeType: !Ref VolumeType
+                    DeleteOnTermination: false
+            IamInstanceProfile: !Ref IamInstanceProfile
+            Tags: 
+              - 
+                Key: "Name"
+                Value: "Power-BI-Gateway-DEV-01"
+            HibernationOptions: 
+                Configured: false
+            EnclaveOptions: 
+                Enabled: false
+
+    EC2Instance2:
+        Type: "AWS::EC2::Instance"
+        Properties:
+            ImageId: !Ref ImageId2
+            InstanceType: !Ref InstanceType2
+            KeyName: "EC2-Windows-Keypair"
+            # AvailabilityZone: !Sub "${AWS::Region}a"
+            Tenancy: "default"
+            SubnetId: !Ref SubnetId
+            EbsOptimized: false
+            SecurityGroupIds: 
+              - !Ref EC2SecurityGroup3
+              - !Ref EC2SecurityGroup
+            SourceDestCheck: true
+            BlockDeviceMappings: 
+              - 
+                DeviceName: "/dev/sda1"
+                Ebs: 
+                    Encrypted: true
+                    VolumeSize: !Ref VolumeSize
+                    # SnapshotId: !Ref SnapshotId2
+                    VolumeType: !Ref VolumeType
+                    DeleteOnTermination: true
+              - 
+                DeviceName: "xvdb"
+                Ebs: 
+                    Encrypted: true
+                    VolumeSize: 100
+                    VolumeType: !Ref VolumeType
+                    DeleteOnTermination: false
+            IamInstanceProfile: !Ref IamInstanceProfile
+            Tags: 
+              - 
+                Key: "Name"
+                Value: "POWER-BI-Desktop-DEV-01"
+            HibernationOptions: 
+                Configured: false
+            EnclaveOptions: 
+                Enabled: false
+
