@@ -40,8 +40,8 @@ Parameters:
     #     Default: "snap-076fecc234be845f3"
     #     Description: "Snapshot ID for the second EBS volume"
     VolumeSize:
-        Type: Number
-        Default: 50
+        Type: String
+        Default: "50"
         Description: "Size of the EBS volume in GB"
     VolumeType:
         Type: String
