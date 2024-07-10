@@ -121,7 +121,7 @@ Resources:
         Properties:
             ImageId: !Ref ImageId1
             InstanceType: !Ref InstanceType1
-            KeyName: "EC2-Windows-Keypair"
+            KeyName: "KeyPair-EC2-template-test"
             # AvailabilityZone: !GetAtt EC2Instance2.AvailabilityZone
             Tenancy: "default"
             SubnetId: !Ref SubnetId
@@ -160,7 +160,7 @@ Resources:
         Properties:
             ImageId: !Ref ImageId2
             InstanceType: !Ref InstanceType2
-            KeyName: "EC2-Windows-Keypair"
+            KeyName: "KeyPair-EC2-template-test"
             # AvailabilityZone: !Sub "${AWS::Region}a"
             Tenancy: "default"
             SubnetId: !Ref SubnetId
