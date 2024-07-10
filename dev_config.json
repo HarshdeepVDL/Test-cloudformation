@@ -6,7 +6,7 @@
         "ImageId2": "ami-09f6da726716a4ca6",
         "InstanceType1": "t3.micro",
         "InstanceType2": "t3.micro",
-        "VolumeSize": 50,
+        "VolumeSize": "50",
         "VolumeType": "gp2",
         "IamInstanceProfile": "EC2CFRole"
     }
