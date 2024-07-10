@@ -6,8 +6,6 @@
         "ImageId2": "ami-09f6da726716a4ca6",
         "InstanceType1": "t3.micro",
         "InstanceType2": "t3.micro",
-        // "SnapshotId1": "subnet-05bfa082f3be16a19",
-        // "SnapshotId2": "snap-04f925caa88093a67",
         "VolumeSize": 50,
         "VolumeType": "gp2",
         "IamInstanceProfile": "EC2CFRole"
