@@ -9,7 +9,7 @@
         "VolumeSize": "50",
         "VolumeType": "gp2",
         "IamInstanceProfile": "EC2CFRole",
-        "BucketName": "S3EC2CFTest",
+        "BucketName": "s3ec2cftest",
         "SSEAlgorithmPara": "AES256"
     }
 }
