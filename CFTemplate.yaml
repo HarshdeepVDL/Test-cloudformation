@@ -52,6 +52,13 @@ Parameters:
         # Default: "ec2-desktop-setup-SsmInstanceProfile-2YD2aEtFUTjO"
         Default: "EC2CFRole"
         Description: "IAM Instance Profile for the EC2 instances"
+    BucketName:
+      Type: String
+      Description: Name for S3 bucket 
+    SSEAlgorithmPara:
+      Type: String
+      Default: "AES256"
+      Description: SSEAlgorithm 
 Resources:
     EC2SecurityGroup:
         Type: "AWS::EC2::SecurityGroup"
@@ -194,4 +201,28 @@ Resources:
                 Configured: false
             EnclaveOptions: 
                 Enabled: false
+
+    s3lnddev01:
+      Type: "AWS::S3::Bucket"
+      Properties:
+        AccessControl: "BucketOwnerFullControl"
+        BucketEncryption:
+          ServerSideEncryptionConfiguration: 
+            - ServerSideEncryptionByDefault:
+                SSEAlgorithm: !Ref SSEAlgorithmPara
+        BucketName: !Ref BucketName
+        ObjectLockEnabled: false
+        OwnershipControls:
+          Rules:
+            - ObjectOwnership: "BucketOwnerPreferred"
+        PublicAccessBlockConfiguration: 
+          BlockPublicAcls: true
+          IgnorePublicAcls: true
+          BlockPublicPolicy: true
+          RestrictPublicBuckets: true
+        Tags: 
+          - Key: "Environment"
+            Value: "Production"
+        VersioningConfiguration: 
+          Status: "Suspended"
 
