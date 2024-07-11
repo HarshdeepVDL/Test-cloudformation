@@ -8,6 +8,8 @@
         "InstanceType2": "t3.micro",
         "VolumeSize": "50",
         "VolumeType": "gp2",
-        "IamInstanceProfile": "EC2CFRole"
+        "IamInstanceProfile": "EC2CFRole",
+        "BucketName": "S3EC2CFTest",
+        "SSEAlgorithmPara": "AES256"
     }
 }
