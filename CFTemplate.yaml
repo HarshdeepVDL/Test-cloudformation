@@ -1,228 +1,1692 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: "CloudFormation template to create an EC2 instance with specified parameters, security groups, and EBS"
+
+
+
 Parameters:
-    VpcId:
-        Type: String
-        # Default: "vpc-04a51508b738a6dd4"
-        Default: "vpc-0aedf2952ee21c8a8"
-        Description: "VPC ID for the instances and security groups"
-    SubnetId:
-        Type: String
-        # Default: "subnet-0ebff18949855b623"
-        Default: "subnet-05bfa082f3be16a19"
-        Description: "Subnet ID for the instances"
-    ImageId1:
-        Type: String
-        # Default: "ami-02ba094db0de328c2"
-        Default: "ami-09f6da726716a4ca6"
-        Description: "AMI ID for the first EC2 instance"
-    ImageId2:
-        Type: String
-        # Default: "ami-0c38ffb7026461cc9"
-        Default: "ami-09f6da726716a4ca6"
-        Description: "AMI ID for the second EC2 instance"
-    InstanceType1:
-        Type: String
-        # Default: "t2.medium"
-        Default: "t3.micro"
-        Description: "Instance type for the first EC2 instance"
-    InstanceType2:
-        Type: String
-        # Default: "t2.2xlarge"
-        Default: "t3.micro"
-        Description: "Instance type for the second EC2 instance"
-    # SnapshotId1:
-    #     Type: String
-    #     Default: "snap-09bf0af617131d929"
-    #     Description: "Snapshot ID for the first EBS volume"
-    # SnapshotId2:
-    #     Type: String
-    #     Default: "snap-076fecc234be845f3"
-    #     Description: "Snapshot ID for the second EBS volume"
-    VolumeSize:
-        Type: String
-        Default: "50"
-        Description: "Size of the EBS volume in GB"
-    VolumeType:
-        Type: String
-        Default: "gp2"
-        Description: "Type of the EBS volume"
-    IamInstanceProfile:
-        Type: String
-        # Default: "ec2-desktop-setup-SsmInstanceProfile-2YD2aEtFUTjO"
-        Default: "EC2CFRole"
-        Description: "IAM Instance Profile for the EC2 instances"
-    BucketName:
-      Type: String
-      Description: Name for S3 bucket 
-    SSEAlgorithmPara:
-      Type: String
-      Default: "AES256"
-      Description: SSEAlgorithm 
+  PowerBIDesktopInstanceType:
+    Type: String
+    Default: t3.micro
+    Description: EC2 instance type
+  PowerBIDesktopKeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Default: KeyPair-EC2-template-test
+    Description: Name of the EC2 Key Pair
+  PowerBIDesktopImageIdDesktop:
+    Type: AWS::EC2::Image::Id
+    Default: ami-09f6da726716a4ca6
+    Description: EC2 instance image ID for desktop
+  PowerBIDesktopSubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Default: subnet-05bfa082f3be16a19
+    Description: ID of the subnet for the EC2 instance
+  PowerBIDesktopVpcId:
+    Type: AWS::EC2::VPC::Id
+    Default: vpc-0aedf2952ee21c8a8
+    Description: ID of the VPC
+  PowerBIDesktopIamInstanceProfileArn:
+    Type: String
+    Default: "EC2CFRole"
+    Description: ARN of the IAM instance profile
+  PowerBIDesktopSecurityGroupDescription1:
+    Type: String
+    Default: "Allow RDP access to EC2 desktop and gateway"
+    Description: Description of the security group 1
+  PowerBIDesktopSecurityGroupDescription2:
+    Type: String
+    Default: "Test for Inspection"
+    Description: Description of the security group 2
+  PowerBIDesktopKmsKeyId:
+    Type: String
+    Default: "arn:aws:kms:us-east-1:867070907590:key/814e1fff-8921-40dd-916a-385f86bc5323"
+    Description: Enter the KMS Key ID for encryption
+  PowerBIDesktopSnapshotIdForVolume:
+    Type: String
+    Default: "snap-09bf0af617131d929"
+    Description: Enter the Snapshot Id for Root Volume  
+  PowerBIDesktopNumberOfCore:
+    Type: String
+    Default: "8"
+    Description: Enter the Number of Core  
+  PowerBIDesktopNumberOfThreads:
+    Type: String
+    Default: "1"
+    Description: Enter the Number of Threads
+  PowerBIDesktopSizeOfVolume:
+    Type: String
+    Default: "50"
+    Description: Enter the Size of Volume
+  PowerBIDesktopTypeOfVolume:
+    Type: String 
+    Default: "gp2"
+    Description: Enter the Type Volume
+  PowerBIDesktopSizeOfVolumeAttach:
+    Type: String
+    Default: "100"
+    Description: Enter the Size of Volume
+  PowerBIDesktopTypeOfVolumeAttach:
+    Type: String 
+    Default: "gp2"
+    Description: Enter the Type Volume
+
+  PowerBiGatewayInstanceType:
+    Type: String
+    Default: t3.micro
+    Description: EC2 instance type
+  PowerBiGatewayKeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Default: KeyPair-EC2-template-test
+    Description: Name of the EC2 Key Pair
+  PowerBiGatewayImageIdGateway:
+    Type: AWS::EC2::Image::Id
+    Default: ami-09f6da726716a4ca6
+    Description: EC2 instance image ID for Gateway
+  PowerBiGatewaySubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Default: subnet-05bfa082f3be16a19
+    Description: ID of the subnet for the EC2 instance
+  PowerBiGatewayVpcId:
+    Type: AWS::EC2::VPC::Id
+    Default: vpc-0aedf2952ee21c8a8
+    Description: ID of the VPC
+  PowerBiGatewayIamInstanceProfileArn:
+    Type: String
+    Default: "EC2CFRole"
+    Description: ARN of the IAM instance profile
+  PowerBiGatewaySecurityGroupDescription1:
+    Type: String
+    Default: "Allow RDP access to EC2 desktop and gateway"
+    Description: Description of the security group 1
+  PowerBiGatewaySecurityGroupDescription2:
+    Type: String
+    Default: "Test for Inspection"
+    Description: Description of the security group 2
+  PowerBiGatewayKmsKeyId:
+    Type: String
+    Default: "arn:aws:kms:us-east-1:867070907590:key/814e1fff-8921-40dd-916a-385f86bc5323"
+    Description: Enter the KMS Key ID for encryption
+  PowerBiGatewaySnapshotIdForVolume:
+    Type: String
+    Default: "snap-09bf0af617131d929"
+    Description: Enter the Snapshot Id for Root Volume
+  PowerBiGatewaySizeOfVolume:
+    Type: String
+    Default: "50"
+    Description: Enter the Size of Volume
+  PowerBiGatewaySizeOfVolumeAttach:
+    Type: String
+    Default: "100"
+    Description: Enter the Size of Attach Volume
+  PowerBiGatewayTypeOfVolumeAttach:
+    Type: String
+    Default: "gp2"
+    Description: Enter the Type Volume
+
+  OpenInsightInstanceType:
+    Type: String
+    Default: t3.micro
+    Description: EC2 instance type
+  OpenInsightKeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Default: KeyPair-EC2-template-test
+    Description: Name of the EC2 Key Pair
+  OpenInsightKmsKeyId:
+    Type: String
+    Default: "arn:aws:kms:us-east-1:867070907590:key/814e1fff-8921-40dd-916a-385f86bc5323"
+    Description: KMS Key ID for encryption
+  OpenInsightImageId:
+    Type: AWS::EC2::Image::Id
+    Default: ami-09f6da726716a4ca6
+    Description: EC2 instance image ID
+  OpenInsightSubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Default: subnet-08dba10f7efcfce74
+    Description: ID of the subnet for the EC2 instance
+  OpenInsightVpcId:
+    Type: AWS::EC2::VPC::Id
+    Default: vpc-0aedf2952ee21c8a8
+    Description: ID of the VPC
+  OpenInsightIamInstanceProfileArn:
+    Type: String
+    Default: "EC2CFRole"
+    Description: ARN of the IAM instance profile
+  OpenInsightSnapshotIdForVolume:
+    Type: String
+    Default: "snap-056ae2eb0a811e2dd"
+    Description: Snapshot ID for the root volume
+  OpenInsightSizeOfVolume:
+    Type: String
+    Default: "100"
+    Description: Enter the Size of Volume
+  OpenInsightTypeOfVolume:
+    Type: String 
+    Default: "gp2"
+    Description: Enter the Type Volume
+  OpenInsightSizeOfVolumeAttach:
+    Type: String
+    Default: "190"
+    Description: Enter the Size of Volume
+  OpenInsightTypeOfVolumeAttach:
+    Type: String 
+    Default: "gp2"
+    Description: Enter the Type Volume
+
+  TestDepDevAmlInstanceType:
+    Type: String
+    Default: t3.micro
+    Description: EC2 instance type
+  TestDepDevAmlKeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Default: KeyPair-EC2-template-test
+    Description: Name of the EC2 Key Pair
+  TestDepDevAmlImageId:
+    Type: AWS::EC2::Image::Id
+    Default: ami-09f6da726716a4ca6
+    Description: EC2 instance image ID
+  TestDepDevAmlSubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Default: subnet-05bfa082f3be16a19
+    Description: ID of the subnet for the EC2 instance
+  TestDepDevAmlVpcId:
+    Type: AWS::EC2::VPC::Id
+    Default: vpc-0aedf2952ee21c8a8
+    Description: ID of the VPC
+  TestDepDevAmlIamInstanceProfileArn:
+    Type: String
+    Default: "EC2CFRole"
+    Description: ARN of the IAM instance profile
+  TestDepDevAmlKmsKeyId:
+    Type: String
+    Default: "arn:aws:kms:us-east-1:867070907590:key/814e1fff-8921-40dd-916a-385f86bc5323"
+    Description: KMS Key ID for encryption
+  TestDepDevAmlSnapshotIdForVolume:
+    Type: String
+    Default: "snap-015ca71e26658eb10"
+    Description: Snapshot ID for the root volume
+  TestDepDevAmlSizeOfVolume:
+    Type: String
+    Default: "50"
+    Description: Enter the Size of Volume
+  TestDepDevAmlTypeOfVolume:
+    Type: String 
+    Default: "gp2"
+    Description: Enter the Type Volume
+
+
+  CicdInstanceType:
+    Type: String
+    Default: t3.micro
+    Description: EC2 instance type for CI/CD
+  CicdKeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Default: KeyPair-EC2-template-test
+    Description: Name of the EC2 Key Pair
+  CicdImageId:
+    Type: AWS::EC2::Image::Id
+    Default: ami-09f6da726716a4ca6
+    Description: EC2 instance image ID
+  CicdSubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Default: subnet-05bfa082f3be16a19
+    Description: ID of the subnet for the EC2 instance
+  CicdVpcId:
+    Type: AWS::EC2::VPC::Id
+    Default: vpc-0aedf2952ee21c8a8
+    Description: ID of the VPC
+  CicdIamInstanceProfileArn:
+    Type: String
+    Default: "EC2CFRole"
+    Description: ARN of the IAM instance profile
+  CicdKmsKeyId:
+    Type: String
+    Default: "arn:aws:kms:us-east-1:867070907590:key/814e1fff-8921-40dd-916a-385f86bc5323"
+    Description: KMS Key ID for encryption
+  CicdSnapshotIdForVolume:
+    Type: String
+    Default: "snap-015ca71e26658eb10"
+    Description: Snapshot ID for the root volume
+  CicdSizeOfVolume:
+    Type: String
+    Default: "50"
+    Description: Enter the Size of Volume
+  CicdTypeOfVolume:
+    Type: String 
+    Default: "gp2"
+    Description: Enter the Type Volume
+  
+  AirflowInstanceType:
+    Type: String
+    Default: t3.micro
+    Description: EC2 instance type for Airflow
+  AirflowKeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Default: KeyPair-EC2-template-test
+    Description: Name of the EC2 Key Pair for Airflow
+  AirflowImageId:
+    Type: AWS::EC2::Image::Id
+    Default: ami-09f6da726716a4ca6
+    Description: EC2 instance image ID for Airflow
+  AirflowSubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Default: subnet-05bfa082f3be16a19
+    Description: ID of the subnet for Airflow EC2 instance
+  AirflowVpcId:
+    Type: AWS::EC2::VPC::Id
+    Default: vpc-0aedf2952ee21c8a8
+    Description: ID of the VPC for Airflow
+  AirflowIamInstanceProfileArn:
+    Type: String
+    Default: "EC2CFRole"
+    Description: ARN of the IAM instance profile for Airflow
+  AirflowKmsKeyId:
+    Type: String
+    Default: "arn:aws:kms:us-east-1:867070907590:key/814e1fff-8921-40dd-916a-385f86bc5323"
+    Description: KMS Key ID for Airflow encryption
+  AirflowSnapshotIdForVolume:
+    Type: String
+    Default: "snap-015ca71e26658eb10"
+    Description: Snapshot ID for the root volume of Airflow
+  AirflowSizeOfVolume:
+    Type: String
+    Default: "50"
+    Description: Enter the Size of Airflow Volume
+  AirflowTypeOfVolume:
+    Type: String 
+    Default: "gp2"
+    Description: Enter the Type of Volume for Airflow
+
+  Ec2MessagesVPCId:
+    Type: AWS::EC2::VPC::Id
+    Default: "vpc-0aedf2952ee21c8a8"
+    Description: ID of VPC 
+
+  Ec2MessagesSubnetIdPrivateSubnet1:
+    Type: AWS::EC2::Subnet::Id
+    Default: "subnet-0000b785f602f88c6"
+    Description: Subnet ID1 for the interface endpoint
+
+  Ec2MessagesSubnetIdPrivateSubnet2:
+    Type: AWS::EC2::Subnet::Id
+    Default: "subnet-08dba10f7efcfce74"
+    Description: Subnet ID2 for the interface endpoint
+
+  Ec2MessagesSecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+    Default: "sg-0fe8398124032e9bf"
+    Description: ID of the security group
+
+  EndpointkmsVpcId:
+    Type: AWS::EC2::VPC::Id
+    Default: "vpc-0aedf2952ee21c8a8"
+    Description: ID of the VPC
+
+  EndpointkmsSubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Default: "subnet-0000b785f602f88c6"
+    Description: ID of the subnet
+
+  EndpointkmsSecurityGroupIdsParam:
+    Type: AWS::EC2::SecurityGroup::Id
+    Default: "sg-0fe8398124032e9bf"
+    Description: ID of the security group
+
+  Endpoints3VPCid:
+    Type: AWS::EC2::VPC::Id
+    Default: "vpc-0aedf2952ee21c8a8"
+    Description: ID of the VPC
+
+  Endpoints3RouteTableIdParam:
+    Type: String
+    Default: "rtb-0a5960cc95241d3fe"
+    Description: ID of the route table
+
+  EndpointsecretmanagerVpcId:
+    Type: AWS::EC2::VPC::Id
+    Default: "vpc-0aedf2952ee21c8a8"
+    Description: ID of the VPC
+
+  EndpointsecretmanagerSubnetId:
+    Type: AWS::EC2::Subnet::Id
+    Default: "subnet-08dba10f7efcfce74"
+    Description: ID of the subnet
+
+  EndpointsecretmanagerSecurityGroupIdsParam:
+    Type: AWS::EC2::SecurityGroup::Id
+    Default: "sg-0fe8398124032e9bf"
+    Description: ID of the security group
+
+  ssmMessagesVpcId:
+    Type: AWS::EC2::VPC::Id
+    Default: "vpc-0aedf2952ee21c8a8"
+    Description: ID of the VPC
+
+  ssmMessagesSubnetId1:
+    Type: AWS::EC2::Subnet::Id
+    Default: "subnet-0000b785f602f88c6"
+    Description: ID of Subnet 1
+
+  ssmMessagesSubnetId2:
+    Type: AWS::EC2::Subnet::Id
+    Default: "subnet-05bfa082f3be16a19"
+    Description: ID of Subnet 2
+
+  ssmMessagesSecurityGroupIdsParam:
+    Type: AWS::EC2::SecurityGroup::Id
+    Default: "sg-0fe8398124032e9bf"
+    Description: ID of the security group
+
+
+  BucketName1:
+    Type: String
+    Description: Name for S3 bucket1 
+  BucketName2:
+    Type: String
+    Description: Name for S3 bucket2 
+  BucketName3:
+    Type: String
+    Description: Name for S3 bucket3 
+  BucketName4:
+    Type: String
+    Description: Name for S3 bucket4 
+  SSEAlgorithmPara:
+    Type: String
+    Default: "AES256"
+    Description: SSEAlgorithm 
+
+# -----------------------------------------------------------------------------------------------------------------------------------------
+
+
+# Parameters:
+#   PowerBIDesktopInstanceType:
+#     Type: String
+#     Default: t2.medium
+#     Description: EC2 instance type
+#   PowerBIDesktopKeyName:
+#     Type: AWS::EC2::KeyPair::KeyName
+#     Default: EC2-Windows-Keypair
+#     Description: Name of the EC2 Key Pair
+#   PowerBIDesktopImageIdDesktop:
+#     Type: AWS::EC2::Image::Id
+#     Default: ami-0c38ffb7026461cc9
+#     Description: EC2 instance image ID for desktop
+#   PowerBIDesktopSubnetId:
+#     Type: AWS::EC2::Subnet::Id
+#     Default: subnet-0ebff18949855b623
+#     Description: ID of the subnet for the EC2 instance
+#   PowerBIDesktopVpcId:
+#     Type: AWS::EC2::VPC::Id
+#     Default: vpc-04a51508b738a6dd4
+#     Description: ID of the VPC
+#   PowerBIDesktopIamInstanceProfileArn:
+#     Type: String
+#     Default: "SSM-Role"
+#     Description: ARN of the IAM instance profile
+#   PowerBIDesktopSecurityGroupDescription1:
+#     Type: String
+#     Default: "Allow RDP access to EC2 desktop and gateway"
+#     Description: Description of the security group 1
+#   PowerBIDesktopSecurityGroupDescription2:
+#     Type: String
+#     Default: "Test for Inspection"
+#     Description: Description of the security group 2
+#   PowerBIDesktopKmsKeyId:
+#     Type: String
+#     Default: "arn:aws:kms:us-east-1:867070907590:key/814e1fff-8921-40dd-916a-385f86bc5323"
+#     Description: Enter the KMS Key ID for encryption
+#   PowerBIDesktopSnapshotIdForVolume:
+#     Type: String
+#     Default: "snap-09bf0af617131d929"
+#     Description: Enter the Snapshot Id for Root Volume  
+#   PowerBIDesktopNumberOfCore:
+#     Type: String
+#     Default: "8"
+#     Description: Enter the Number of Core  
+#   PowerBIDesktopNumberOfThreads:
+#     Type: String
+#     Default: "1"
+#     Description: Enter the Number of Threads
+#   PowerBIDesktopSizeOfVolume:
+#     Type: String
+#     Default: "50"
+#     Description: Enter the Size of Volume
+#   PowerBIDesktopTypeOfVolume:
+#     Type: String 
+#     Default: "gp2"
+#     Description: Enter the Type Volume
+#   PowerBIDesktopSizeOfVolumeAttach:
+#     Type: String
+#     Default: "100"
+#     Description: Enter the Size of Volume
+#   PowerBIDesktopTypeOfVolumeAttach:
+#     Type: String 
+#     Default: "gp2"
+#     Description: Enter the Type Volume
+
+#   PowerBiGatewayInstanceType:
+#     Type: String
+#     Default: t2.medium
+#     Description: EC2 instance type
+#   PowerBiGatewayKeyName:
+#     Type: AWS::EC2::KeyPair::KeyName
+#     Default: EC2-Windows-Keypair
+#     Description: Name of the EC2 Key Pair
+#   PowerBiGatewayImageIdGateway:
+#     Type: AWS::EC2::Image::Id
+#     Default: ami-02ba094db0de328c2
+#     Description: EC2 instance image ID for Gateway
+#   PowerBiGatewaySubnetId:
+#     Type: AWS::EC2::Subnet::Id
+#     Default: subnet-0ebff18949855b623
+#     Description: ID of the subnet for the EC2 instance
+#   PowerBiGatewayVpcId:
+#     Type: AWS::EC2::VPC::Id
+#     Default: vpc-04a51508b738a6dd4
+#     Description: ID of the VPC
+#   PowerBiGatewayIamInstanceProfileArn:
+#     Type: String
+#     Default: SSM-Role
+#     Description: ARN of the IAM instance profile
+#   PowerBiGatewaySecurityGroupDescription1:
+#     Type: String
+#     Default: Allow RDP access to EC2 desktop and gateway
+#     Description: Description of the security group 1
+#   PowerBiGatewaySecurityGroupDescription2:
+#     Type: String
+#     Default: Test for Inspection
+#     Description: Description of the security group 2
+#   PowerBiGatewayKmsKeyId:
+#     Type: String
+#     Default: arn:aws:kms:us-east-1:867070907590:key/814e1fff-8921-40dd-916a-385f86bc5323
+#     Description: Enter the KMS Key ID for encryption
+#   PowerBiGatewaySnapshotIdForVolume:
+#     Type: String
+#     Default: snap-09bf0af617131d929
+#     Description: Enter the Snapshot Id for Root Volume
+#   # PowerBiGatewayNumberOfCore:
+#   #   Type: String
+#   #   Default: 8
+#   #   Description: Enter the Number of Core
+#   # PowerBiGatewayNumberOfThreads:
+#   #   Type: String
+#   #   Default: 1
+#   #   Description: Enter the Number of Threads
+#   PowerBiGatewaySizeOfVolume:
+#     Type: String
+#     Default: 50
+#     Description: Enter the Size of Volume
+#   PowerBiGatewaySizeOfVolumeAttach:
+#     Type: String
+#     Default: 100
+#     Description: Enter the Size of Attach Volume
+#   PowerBiGatewayTypeOfVolumeAttach:
+#     Type: String
+#     Default: gp2
+#     Description: Enter the Type Volume
+
+#   OpenInsightInstanceType:
+#     Type: String
+#     Default: t2.large
+#     Description: EC2 instance type
+#   OpenInsightKeyName:
+#     Type: AWS::EC2::KeyPair::KeyName
+#     Default: EC2-OI-Keypair
+#     Description: Name of the EC2 Key Pair
+#   OpenInsightKmsKeyId:
+#     Type: String
+#     Default: arn:aws:kms:us-east-1:867070907590:key/814e1fff-8921-40dd-916a-385f86bc5323
+#     Description: KMS Key ID for encryption
+#   OpenInsightImageId:
+#     Type: AWS::EC2::Image::Id
+#     Default: ami-0f496107db66676ff
+#     Description: EC2 instance image ID
+#   OpenInsightSubnetId:
+#     Type: AWS::EC2::Subnet::Id
+#     Default: subnet-0ebff18949855b623
+#     Description: ID of the subnet for the EC2 instance
+#   OpenInsightVpcId:
+#     Type: AWS::EC2::VPC::Id
+#     Default: vpc-04a51508b738a6dd4
+#     Description: ID of the VPC
+#   OpenInsightIamInstanceProfileArn:
+#     Type: String
+#     Default: SSM-Role
+#     Description: ARN of the IAM instance profile
+#   OpenInsightSnapshotIdForVolume:
+#     Type: String
+#     Default: snap-056ae2eb0a811e2dd
+#     Description: Snapshot ID for the root volume
+#   # OpenInsightNumberOfCore:
+#   #   Type: String
+#   #   Default: "2"
+#   #   Description: Enter the Number of Core  
+#   # OpenInsightNumberOfThreads:
+#   #   Type: String
+#   #   Default: "1"
+#   #   Description: Enter the Number of Threads
+#   OpenInsightSizeOfVolume:
+#     Type: String
+#     Default: "100"
+#     Description: Enter the Size of Volume
+#   OpenInsightTypeOfVolume:
+#     Type: String 
+#     Default: "gp3"
+#     Description: Enter the Type Volume
+#   OpenInsightSizeOfVolumeAttach:
+#     Type: String
+#     Default: "1900"
+#     Description: Enter the Size of Volume
+#   OpenInsightTypeOfVolumeAttach:
+#     Type: String 
+#     Default: "gp3"
+#     Description: Enter the Type Volume
+
+#   TestDepDevAmlInstanceType:
+#     Type: String
+#     Default: t2.large
+#     Description: EC2 instance type
+#   TestDepDevAmlKeyName:
+#     Type: AWS::EC2::KeyPair::KeyName
+#     Default: EC2-Windows-Keypair
+#     Description: Name of the EC2 Key Pair
+#   TestDepDevAmlImageId:
+#     Type: AWS::EC2::Image::Id
+#     Default: ami-0230bd60aa48260c6
+#     Description: EC2 instance image ID
+#   TestDepDevAmlSubnetId:
+#     Type: AWS::EC2::Subnet::Id
+#     Default: subnet-0ebff18949855b623
+#     Description: ID of the subnet for the EC2 instance
+#   TestDepDevAmlVpcId:
+#     Type: AWS::EC2::VPC::Id
+#     Default: vpc-04a51508b738a6dd4
+#     Description: ID of the VPC
+#   TestDepDevAmlIamInstanceProfileArn:
+#     Type: String
+#     Default: AmazonSSMRoleForInstancesQuickSetup
+#     Description: ARN of the IAM instance profile
+#   TestDepDevAmlKmsKeyId:
+#     Type: String
+#     Default: arn:aws:kms:us-east-1:867070907590:key/814e1fff-8921-40dd-916a-385f86bc5323
+#     Description: KMS Key ID for encryption
+#   TestDepDevAmlSnapshotIdForVolume:
+#     Type: String
+#     Default: snap-015ca71e26658eb10
+#     Description: Snapshot ID for the root volume
+#   # TestDepDevAmlNumberOfCore:
+#   #   Type: String
+#   #   Default: "2"
+#   #   Description: Enter the Number of Core  
+#   # TestDepDevAmlNumberOfThreads:
+#   #   Type: String
+#   #   Default: "1"
+#   #   Description: Enter the Number of Threads
+#   TestDepDevAmlSizeOfVolume:
+#     Type: String
+#     Default: "50"
+#     Description: Enter the Size of Volume
+#   TestDepDevAmlTypeOfVolume:
+#     Type: String 
+#     Default: "gp3"
+#     Description: Enter the Type Volume
+
+#   CicdInstanceType:
+#     Type: String
+#     Default: t4g.nano
+#     Description: EC2 instance type
+#   CicdKeyName:
+#     Type: AWS::EC2::KeyPair::KeyName
+#     Default: KeyPair-EC2-CICD
+#     Description: Name of the EC2 Key Pair
+#   CicdImageId:
+#     Type: AWS::EC2::Image::Id
+#     Default: ami-05adadbbe8cf9fb48
+#     Description: EC2 instance image ID
+#   CicdSubnetId:
+#     Type: AWS::EC2::Subnet::Id
+#     Default: subnet-0ebff18949855b623
+#     Description: ID of the subnet for the EC2 instance
+#   CicdVpcId:
+#     Type: AWS::EC2::VPC::Id
+#     Default: vpc-04a51508b738a6dd4
+#     Description: ID of the VPC
+#   CicdIamInstanceProfileArn:
+#     Type: String
+#     Default: EC2CICDRole
+#     Description: ARN of the IAM instance profile
+#   CicdSecurityGroupName:
+#     Type: String
+#     Default: launch-wizard-1
+#     Description: Name of the security group
+#   CicdSnapshotIdForVolume:
+#     Type: String
+#     Default: "snap-0ee4b8cfbe15fa103"
+#     Description: Enter the Snapshot Id for Root Volume  
+#   # CicdNumberOfCore:
+#   #   Type: String
+#   #   Default: "2"
+#   #   Description: Enter the Number of Core  
+#   # CicdNumberOfThreads:
+#   #   Type: String
+#   #   Default: "1"
+#   #   Description: Enter the Number of Threads
+#   CicdSizeOfVolume:
+#     Type: String
+#     Default: "8"
+#     Description: Enter the Size of Volume
+#   CicdTypeOfVolume:
+#     Type: String 
+#     Default: "gp3"
+#     Description: Enter the Type Volume
+
+#   AirflowInstanceType:
+#     Type: String
+#     Default: t2.xlarge
+#     Description: EC2 instance type
+#   AirflowKeyName:
+#     Type: AWS::EC2::KeyPair::KeyName
+#     Default: datafabric-airflow
+#     Description: Name of the EC2 Key Pair
+#   AirflowImageId:
+#     Type: AWS::EC2::Image::Id
+#     Default: ami-04b70fa74e45c3917
+#     Description: EC2 instance image ID
+#   AirflowSubnetId:
+#     Type: AWS::EC2::Subnet::Id
+#     Default: subnet-0ebff18949855b623
+#     Description: ID of the subnet for the EC2 instance
+#   AirflowVpcId:
+#     Type: AWS::EC2::VPC::Id
+#     Default: vpc-04a51508b738a6dd4
+#     Description: ID of the VPC
+#   AirflowIamInstanceProfileArn:
+#     Type: String
+#     Default: AWS_GLUE_ACCESS_ROLE
+#     Description: ARN of the IAM instance profile
+#   AirflowSnapshotIdForVolume:
+#     Type: String
+#     Default: snap-053c5175dbcbf2351
+#     Description: Snapshot ID for the root volume
+#   AirflowSecurityGroupForRDSEC2:
+#     Type:  AWS::EC2::SecurityGroup::Id
+#     Default: sg-06444a26c813d2db9
+#     Description: SecurityGroup for RDS EC2 
+#   # AirflowNumberOfCore:
+#   #   Type: String
+#   #   Default: "4"
+#   #   Description: Enter the Number of Core  
+#   # AirflowNumberOfThreads:
+#   #   Type: String
+#   #   Default: "1"
+#   #   Description: Enter the Number of Threads
+#   AirflowSizeOfVolume:
+#     Type: String
+#     Default: "100"
+#     Description: Enter the Size of Volume
+#   AirflowTypeOfVolume:
+#     Type: String 
+#     Default: "gp2"
+#     Description: Enter the Type Volume
+#   AirflowRDSEC2SecurityGroup:
+#     Type:  AWS::EC2::SecurityGroup::Id
+#     Default: "sg-06444a26c813d2db9"
+#     Description: Enter RDS-EC2 GroupId
+
+#   Ec2MessagesVPCId:
+#     Type: AWS::EC2::VPC::Id
+#     Default: "vpc-04a51508b738a6dd4"
+#     Description: ID of VPC 
+
+#   Ec2MessagesSubnetIdPrivateSubnet1:
+#     Type: List<AWS::EC2::Subnet::Id>
+#     Default: "subnet-0ebff18949855b623"
+#     Description: Subnet ID1 for the interface endpoint
+
+#   Ec2MessagesSubnetIdPrivateSubnet2:
+#     Type: List<AWS::EC2::Subnet::Id>
+#     Default: "subnet-0aeacaf7533b292e9"
+#     Description: Subnet ID2 for the interface endpoint
+
+#   Ec2MessagesSecurityGroupId:
+#     Type: AWS::EC2::SecurityGroup::Id
+#     Default: "sg-068fd9e16714c0250"
+#     Description: ID of the security group
+
+#   EndpointkmsVpcId:
+#     Type: AWS::EC2::VPC::Id
+#     Default: "vpc-04a51508b738a6dd4"
+#     Description: ID of the VPC
+
+#   EndpointkmsSubnetId:
+#     Type: AWS::EC2::Subnet::Id
+#     Default: "subnet-0ebff18949855b623"
+#     Description: ID of the subnet
+
+#   EndpointkmsSecurityGroupIdsParam:
+#     Type: AWS::EC2::SecurityGroup::Id
+#     Default: "sg-09af03fd82a6357b0"
+#     Description: ID of the security group
+
+#   Endpoints3VPCid:
+#     Type: AWS::EC2::VPC::Id
+#     Default: "vpc-04a51508b738a6dd4"
+#     Description: ID of the VPC
+
+#   Endpoints3RouteTableIdParam:
+#     Type: String
+#     Default: "rtb-020cbb048e3a6e3fa"
+#     Description: ID of the route table
+
+#   EndpointsecretmanagerVpcId:
+#     Type: AWS::EC2::VPC::Id
+#     Default: "vpc-04a51508b738a6dd4"
+#     Description: ID of the VPC
+
+#   EndpointsecretmanagerSubnetId:
+#     Type: AWS::EC2::Subnet::Id
+#     Default: "subnet-0ebff18949855b623"
+#     Description: ID of the subnet
+
+#   EndpointsecretmanagerSecurityGroupIdsParam:
+#     Type: AWS::EC2::SecurityGroup::Id
+#     Default: "sg-09af03fd82a6357b0"
+#     Description: ID of the security group
+
+#   ssmMessagesVpcId:
+#     Type: AWS::EC2::VPC::Id
+#     Default: "vpc-04a51508b738a6dd4"
+#     Description: ID of the VPC
+
+#   ssmMessagesSubnetId1:
+#     Type: AWS::EC2::Subnet::Id
+#     Default: "subnet-0ebff18949855b623"
+#     Description: ID of Subnet 1
+
+#   ssmMessagesSubnetId2:
+#     Type: AWS::EC2::Subnet::Id
+#     Default: "subnet-0aeacaf7533b292e9"
+#     Description: ID of Subnet 2
+
+#   ssmMessagesSecurityGroupIdsParam:
+#     Type: AWS::EC2::SecurityGroup::Id
+#     Default: "sg-068fd9e16714c0250"
+#     Description: ID of the security group
+
+
+#   BucketName1:
+#     Type: String
+#     Description: Name for S3 bucket1 
+#   BucketName2:
+#     Type: String
+#     Description: Name for S3 bucket2 
+#   BucketName3:
+#     Type: String
+#     Description: Name for S3 bucket3 
+#   BucketName4:
+#     Type: String
+#     Description: Name for S3 bucket4 
+#   SSEAlgorithmPara:
+#     Type: String
+#     Default: "AES256"
+#     Description: SSEAlgorithm 
+# --------------------------------------------------------------------------------------------------------------
+  RDSDBInstanceIdentifier:
+    Type: String
+    Default: "rds-data-dev01"
+    Description: "The DB instance identifier"
+  DBinstanceClassParameter:
+    Type: String
+    Default: "db.t3.xlarge"
+    Description: "The DB instance class"
+  RDSDBSubnetGroupName:
+    Type: String
+    Default: "RDSDBSubnetDEV"
+    Description: "DB Subnet Group Name"
+  VPCId:
+    Type: AWS::EC2::VPC::Id
+    Default: "vpc-04a51508b738a6dd4"
+    Description: "VPC where RDS instance will be deployed"
+  RDSSubnetIds1:
+    Type: AWS::EC2::Subnet::Id
+    Default: "subnet-06c4a6dedeaf08520"
+    Description: "List of Subnet IDs for RDS instance 1"
+  RDSSubnetIds2:
+    Type: AWS::EC2::Subnet::Id
+    Default: "subnet-0ebfe91765219c2d8"
+    Description: "List of Subnet IDs for RDS instance 2"
+  # RDSDatabaseSecretKmsKeyId:
+  #   Type: String
+  #   Default: "arn:aws:kms:us-east-1:867070907590:key/0facbc8a-9267-455d-8ab0-636f0fc7f572"
+  #   Description: "KMS Key ID for encrypting the RDS master user secret"
+  RDSDatabaseKmsKeyId:
+    Type: String
+    Default: "arn:aws:kms:us-east-1:867070907590:key/0facbc8a-9267-455d-8ab0-636f0fc7f572"
+    Description: "KMS Key ID for encrypting the RDS"
+  RDSDataMasterUserPassword:
+    Type: String
+    Default: "REPLACEME"
+    Description: "Master User Password"
+  RDSAllocatedStorage:
+    Type: String
+    Default: "1000"
+    Description: "Storage Allocated to RDS"
+  RDSDataPreferredBackupWindow:
+    Type: String
+    Default: "04:50-05:20"
+    Description: "Preferred backup window for RDS. The time range during which automated backups are preferred to occur."
+  RDSDataBackupRetentionPeriod:
+    Type: String
+    Default: "10"
+    Description: "The number of days to retain automated backups for RDS."
+  RDSDataPort:
+    Type: String
+    Default: "1433"
+    Description: "The port number on which the RDS instance should run."
+  RDSStorageType:
+    Type: String
+    Default: "gp2"
+    Description: "Storage Type of RDS"
+  RDSPreferredMaintenanceWindow:
+    Type: String
+    Default: "wed:07:58-wed:08:28"
+    Description: "Preferred weekly maintenance window for the RDS instance. The time range during which system maintenance, such as patches and updates, is preferred to occur."
+  RDSEngineVersion:
+    Type: String
+    Default: "15.00.4236.7.v1"
+    Description: "Engine Version"
+  RDSCharacterSetName:
+    Type: String
+    Default: "SQL_Latin1_General_CP1_CI_AS"
+    Description: "Character Set Name"
+
+  PostgresRDSDBInstanceIdentifier:
+    Type: String
+    Default: "data-fabric-postgres"
+    Description: "The DB instance identifier"
+  PostgresDBinstanceClassParameter:
+    Type: String
+    Default: "db.t4g.micro"
+    Description: "The DB instance class"
+  PostgresRDSDBSubnetGroupName:
+    Type: String
+    Default: "RDSDBSubnetDEV01"
+    Description: "DB Subnet Group Name"
+  PostgresVPCId:
+    Type: AWS::EC2::VPC::Id
+    Default: "vpc-04a51508b738a6dd4"
+    Description: "VPC where RDS instance will be deployed"
+  PostgresRDSSubnetIds1:
+    Type: AWS::EC2::Subnet::Id
+    Default: "subnet-0bc7e01ca0ee0ed16"
+    Description: "List of Subnet IDs for RDS instance"
+  PostgresRDSSubnetIds2:
+    Type: AWS::EC2::Subnet::Id
+    Default: "subnet-0d86c3ef1f063c051"
+    Description: "List of Subnet IDs for RDS instance"
+  # PostgresRDSDatabaseSecretKmsKeyId:
+  #   Type: String
+  #   Description: "KMS Key ID for encrypting the RDS master user secret"
+  PostgresRDSDatabaseKmsKeyId:
+    Type: String
+    Default: "arn:aws:kms:us-east-1:867070907590:key/0facbc8a-9267-455d-8ab0-636f0fc7f572"
+    Description: "KMS Key ID for encrypting the RDS for"
+  PostgresMasterUserPassword:
+    Type: String
+    Default: "REPLACEME"
+    Description: "Master User Password"
+  PostgresAllocatedStorage:
+    Type: String
+    Default: "1000"
+    Description: "Storage Allocated to RDS"
+  PostgresPreferredBackupWindow:
+    Type: String
+    Default: "06:51-07:21"
+    Description: "Preferred backup window for RDS. The time range during which automated backups are preferred to occur."
+  PostgresBackupRetentionPeriod:
+    Type: String
+    Default: "1"
+    Description: "The number of days to retain automated backups for RDS."
+  PostgresPort:
+    Type: String
+    Default: "5432"
+    Description: "The port number on which the RDS instance should run."
+  PostgresStorageType:
+    Type: String
+    Default: "gp2"
+    Description: "Storage Type of RDS"
+  PostgresPreferredMaintenanceWindow:
+    Type: String
+    Default: "sun:06:17-sun:06:47"
+    Description: "Preferred weekly maintenance window for the RDS instance. The time range during which system maintenance, such as patches and updates, is preferred to occur."
+  PostgresEngineVersion:
+    Type: String
+    Default: "16.3"
+    Description: "Engine Version"
+
+
 Resources:
-    EC2SecurityGroup:
-        Type: "AWS::EC2::SecurityGroup"
-        Properties:
-            GroupDescription: "Test for Inspection"
-            GroupName: "Test-Inspection"
-            VpcId: !Ref VpcId
-            SecurityGroupIngress: 
-              - 
-                CidrIp: "0.0.0.0/0"
-                IpProtocol: "-1"
-              - 
-                CidrIp: "10.61.0.0/21"
-                Description: "SSM"
-                FromPort: 443
-                IpProtocol: "tcp"
-                ToPort: 443
-            SecurityGroupEgress: 
-              - 
-                CidrIp: "0.0.0.0/0"
-                IpProtocol: "-1"
+  EC2SecurityGroupPowerBIDesktop1:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Ref PowerBIDesktopSecurityGroupDescription1
+      VpcId: !Ref PowerBIDesktopVpcId
+      SecurityGroupIngress:
+        - IpProtocol: 'tcp'
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: '0.0.0.0/0'
+        - IpProtocol: 'tcp'
+          FromPort: 22
+          ToPort: 22
+          CidrIp: '0.0.0.0/0'
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: '0.0.0.0/0'
+      Tags:
+        - Key: 'Name'
+          Value: 'ec2-desktop-dev01-sg'
 
-    EC2SecurityGroup2:
-        Type: "AWS::EC2::SecurityGroup"
-        Properties:
-            GroupDescription: "Security Group for EC2 gateway"
-            GroupName: "ec2-gateway-sg-dev01"
-            VpcId: !Ref VpcId
-            SecurityGroupIngress: 
-              - 
-                CidrIp: "10.61.0.0/21"
-                Description: "SSM"
-                FromPort: 3389
-                IpProtocol: "tcp"
-                ToPort: 3389
-            SecurityGroupEgress: 
-              - 
-                CidrIp: "0.0.0.0/0"
-                IpProtocol: "-1"
+  EC2SecurityGroupPowerBIDesktop2:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Ref PowerBIDesktopSecurityGroupDescription2
+      VpcId: !Ref PowerBIDesktopVpcId
+      SecurityGroupIngress:
+        - IpProtocol: -1
+          CidrIp: '0.0.0.0/0'
+        - IpProtocol: 'tcp'
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 10.61.0.0/21
+          Description: "SSM"
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: '0.0.0.0/0'
+      Tags:
+        - Key: 'Name'
+          Value: 'Test-Inspection'
 
-    EC2SecurityGroup3:
-        Type: "AWS::EC2::SecurityGroup"
-        Properties:
-            GroupDescription: "Allow RDP access to EC2 desktop and gateway"
-            GroupName: "ec2-desktop-dev01-sg"
-            VpcId: !Ref VpcId
-            SecurityGroupIngress: 
-              - 
-                CidrIp: "0.0.0.0/0"
-                Description: "airflow"
-                FromPort: 8080
-                IpProtocol: "tcp"
-                ToPort: 8080
-              - 
-                CidrIp: "0.0.0.0/0"
-                Description: "ssh"
-                FromPort: 22
-                IpProtocol: "tcp"
-                ToPort: 22
-            SecurityGroupEgress: 
-              - 
-                CidrIp: "0.0.0.0/0"
-                IpProtocol: "-1"
+  EC2InstancePowerBIDesktop:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref PowerBIDesktopImageIdDesktop
+      InstanceType: !Ref PowerBIDesktopInstanceType
+      KeyName: !Ref PowerBIDesktopKeyName
+      SubnetId: !Ref PowerBIDesktopSubnetId
+      IamInstanceProfile: !Ref PowerBIDesktopIamInstanceProfileArn
+      SecurityGroupIds:
+        - !Ref EC2SecurityGroupPowerBIDesktop1
+        - !Ref EC2SecurityGroupPowerBIDesktop2
+      BlockDeviceMappings:
+        - DeviceName: "/dev/sda1"
+          Ebs:
+            VolumeType: !Ref PowerBIDesktopTypeOfVolume
+            VolumeSize: !Ref PowerBIDesktopSizeOfVolume
+            # SnapshotId: !Ref PowerBIDesktopSnapshotIdForVolume
+            Encrypted: true
+            # KmsKeyId: !Ref PowerBIDesktopKmsKeyId
+        - DeviceName: "xvdb"
+          Ebs:
+            VolumeType: !Ref PowerBIDesktopTypeOfVolumeAttach
+            VolumeSize: !Ref PowerBIDesktopSizeOfVolumeAttach
+            Encrypted: true
+            # KmsKeyId: !Ref PowerBIDesktopKmsKeyId
+      HibernationOptions:
+        Configured: false
+      EnclaveOptions:
+        Enabled: false
+      SourceDestCheck: true
+      Tags:
+        - Key: 'Name'
+          Value: 'POWER-BI-Desktop-DEV-01'
 
-    EC2Instance:
-        Type: "AWS::EC2::Instance"
-        Properties:
-            ImageId: !Ref ImageId1
-            InstanceType: !Ref InstanceType1
-            KeyName: "KeyPair-EC2-template-test"
-            # AvailabilityZone: !GetAtt EC2Instance2.AvailabilityZone
-            Tenancy: "default"
-            SubnetId: !Ref SubnetId
-            EbsOptimized: false
-            SecurityGroupIds: 
-              - !Ref EC2SecurityGroup2
-            SourceDestCheck: true
-            BlockDeviceMappings: 
-              - 
-                DeviceName: "/dev/sda1"
-                Ebs: 
-                    Encrypted: true
-                    VolumeSize: !Ref VolumeSize
-                    # SnapshotId: !Ref SnapshotId1
-                    VolumeType: !Ref VolumeType
-                    DeleteOnTermination: true
-              - 
-                DeviceName: "xvdb"
-                Ebs: 
-                    Encrypted: true
-                    VolumeSize: 100
-                    VolumeType: !Ref VolumeType
-                    DeleteOnTermination: false
-            IamInstanceProfile: !Ref IamInstanceProfile
-            Tags: 
-              - 
-                Key: "Name"
-                Value: "Power-BI-Gateway-DEV-01"
-            HibernationOptions: 
-                Configured: false
-            EnclaveOptions: 
-                Enabled: false
+# ------------------------------------------------------------------------------------------------------
 
-    EC2Instance2:
-        Type: "AWS::EC2::Instance"
-        Properties:
-            ImageId: !Ref ImageId2
-            InstanceType: !Ref InstanceType2
-            KeyName: "KeyPair-EC2-template-test"
-            # AvailabilityZone: !Sub "${AWS::Region}a"
-            Tenancy: "default"
-            SubnetId: !Ref SubnetId
-            EbsOptimized: false
-            SecurityGroupIds: 
-              - !Ref EC2SecurityGroup3
-              - !Ref EC2SecurityGroup
-            SourceDestCheck: true
-            BlockDeviceMappings: 
-              - 
-                DeviceName: "/dev/sda1"
-                Ebs: 
-                    Encrypted: true
-                    VolumeSize: !Ref VolumeSize
-                    # SnapshotId: !Ref SnapshotId2
-                    VolumeType: !Ref VolumeType
-                    DeleteOnTermination: true
-              - 
-                DeviceName: "xvdb"
-                Ebs: 
-                    Encrypted: true
-                    VolumeSize: 100
-                    VolumeType: !Ref VolumeType
-                    DeleteOnTermination: false
-            IamInstanceProfile: !Ref IamInstanceProfile
-            Tags: 
-              - 
-                Key: "Name"
-                Value: "POWER-BI-Desktop-DEV-01"
-            HibernationOptions: 
-                Configured: false
-            EnclaveOptions: 
-                Enabled: false
+  PowerBiGatewaySecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security Group for EC2 gateway
+      VpcId: !Ref PowerBiGatewayVpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3389
+          ToPort: 3389
+          CidrIp: 10.61.0.0/21
+          Description: SSM
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
 
-    s3lnddev01:
-      Type: "AWS::S3::Bucket"
+  PowerBiGatewayEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref PowerBiGatewayInstanceType
+      KeyName: !Ref PowerBiGatewayKeyName
+      ImageId: !Ref PowerBiGatewayImageIdGateway
+      SubnetId: !Ref PowerBiGatewaySubnetId
+      IamInstanceProfile: !Ref PowerBiGatewayIamInstanceProfileArn
+      SecurityGroupIds:
+        - !Ref PowerBiGatewaySecurityGroup
+      BlockDeviceMappings:
+        - DeviceName: "/dev/sda1"
+          Ebs:
+            VolumeType: !Ref PowerBiGatewayTypeOfVolumeAttach
+            VolumeSize: !Ref PowerBiGatewaySizeOfVolume
+            # SnapshotId: !Ref PowerBiGatewaySnapshotIdForVolume
+            Encrypted: true
+            # KmsKeyId: !Ref PowerBiGatewayKmsKeyId
+        - DeviceName: "xvdb"
+          Ebs:
+            VolumeType: !Ref PowerBiGatewayTypeOfVolumeAttach
+            VolumeSize: !Ref PowerBiGatewaySizeOfVolumeAttach
+            Encrypted: true
+            # KmsKeyId: !Ref PowerBiGatewayKmsKeyId
+      HibernationOptions:
+        Configured: false
+      EnclaveOptions:
+        Enabled: false
+      SourceDestCheck: true
+      Tags:
+        - Key: Name
+          Value: Power-BI-Gateway-DEV-01
+
+
+
+# ------------------------------------------------------------------------------------------------------
+
+  OpenInsightSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: ec2-oi-sg
+      GroupDescription: "Test-openInsight"
+      VpcId: !Ref OpenInsightVpcId
+      SecurityGroupIngress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+
+  OpenInsightEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref OpenInsightInstanceType
+      KeyName: !Ref OpenInsightKeyName
+      ImageId: !Ref OpenInsightImageId
+      SubnetId: !Ref OpenInsightSubnetId
+      # AvailabilityZone: !Sub "${AWS::Region}a"
+      IamInstanceProfile: !Ref OpenInsightIamInstanceProfileArn
+      SecurityGroupIds:
+        - !Ref OpenInsightSecurityGroup
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeType: !Ref OpenInsightTypeOfVolumeAttach
+            VolumeSize: !Ref OpenInsightSizeOfVolumeAttach
+            # SnapshotId: !Ref OpenInsightSnapshotIdForVolume
+            Encrypted: true
+            # KmsKeyId: !Ref OpenInsightKmsKeyId
+        - DeviceName: xvdf
+          Ebs:
+            VolumeType: !Ref OpenInsightTypeOfVolume
+            VolumeSize: !Ref OpenInsightSizeOfVolume
+            Encrypted: true
+            # KmsKeyId: !Ref OpenInsightKmsKeyId
+      Tags:
+        - Key: Name
+          Value: EC2-OpenInsight
+      EnclaveOptions:
+        Enabled: false
+      HibernationOptions:
+        Configured: false
+      SourceDestCheck: true
+
+# ------------------------------------------------------------------------------------------------------
+
+  TestDepDevAmlEC2Instance:  
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref TestDepDevAmlInstanceType
+      KeyName: !Ref TestDepDevAmlKeyName
+      ImageId: !Ref TestDepDevAmlImageId
+      SubnetId: !Ref TestDepDevAmlSubnetId
+      IamInstanceProfile: !Ref TestDepDevAmlIamInstanceProfileArn
+      SecurityGroupIds:
+        - !Ref TestDepDevAmlSecurityGroup
+      BlockDeviceMappings:
+        - DeviceName: '/dev/xvda'
+          Ebs:
+            VolumeType: !Ref TestDepDevAmlTypeOfVolume
+            VolumeSize: !Ref TestDepDevAmlSizeOfVolume
+            Encrypted: false
+            # SnapshotId: !Ref TestDepDevAmlSnapshotIdForVolume
+      Tags:
+        - Key: Name
+          Value: TEST-DEP-DEV-AML
+      EnclaveOptions:
+        Enabled: false
+      HibernationOptions: 
+        Configured: false
+      SourceDestCheck: false
+
+  TestDepDevAmlSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Test for Inspection
+      GroupName: Test-Inspection
+      VpcId: !Ref TestDepDevAmlVpcId
+      SecurityGroupIngress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 10.61.0.0/21
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+
+
+# ------------------------------------------------------------------------------------------------------
+
+  CicdEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref CicdInstanceType
+      ImageId: !Ref CicdImageId
+      KeyName: !Ref CicdKeyName
+      SubnetId: !Ref CicdSubnetId
+      IamInstanceProfile: !Ref CicdIamInstanceProfileArn
+      BlockDeviceMappings:
+        - DeviceName: "/dev/xvda"
+          Ebs:
+            Encrypted: false
+            VolumeSize: !Ref CicdSizeOfVolume
+            # SnapshotId: !Ref CicdSnapshotIdForVolume
+            VolumeType: !Ref CicdTypeOfVolume
+      SecurityGroupIds:
+        - !Ref CicdInstanceSecurityGroup
+      Tags:
+        - Key: "Name"
+          Value: "EC2-CICD"
+      HibernationOptions:
+        Configured: false
+      EnclaveOptions:
+        Enabled: false
+      SourceDestCheck: true
+
+
+  CicdInstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: launch-wizard-1
+      VpcId: !Ref CicdVpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+
+
+# ------------------------------------------------------------------------------------------------------
+
+  AirflowSecurityGroupRDSEC2:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group attached to instances to securely connect to data-fabric-postgres. Modification could lead to connection loss.
+      GroupName: rds-ec2-1
+      VpcId: !Ref AirflowVpcId
+
+  AirflowSecurityGroupEC2RDS1:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group attached to instances to securely connect to data-fabric-postgres. Modification could lead to connection loss.
+      GroupName: ec2-rds-1
+      VpcId: !Ref AirflowVpcId
+
+  AirflowSecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !GetAtt AirflowSecurityGroupRDSEC2.GroupId
+      IpProtocol: tcp
+      FromPort: 5432
+      ToPort: 5432
+      SourceSecurityGroupId: !GetAtt AirflowSecurityGroupEC2RDS1.GroupId
+
+  AirflowSecurityGroupEgress:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId: !GetAtt AirflowSecurityGroupEC2RDS1.GroupId
+      IpProtocol: tcp
+      FromPort: 5432
+      ToPort: 5432
+      DestinationSecurityGroupId: !GetAtt AirflowSecurityGroupRDSEC2.GroupId
+
+  AirflowSecurityGroupEC2DesktopDev01:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow RDP access to EC2 desktop and gateway
+      GroupName: ec2-desktop-dev01-sg
+      VpcId: !Ref AirflowVpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          CidrIp: 0.0.0.0/0
+          Description: airflow
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+          Description: ssh
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0 
+
+
+  AirflowEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref AirflowInstanceType
+      KeyName: !Ref AirflowKeyName
+      ImageId: !Ref AirflowImageId
+      SubnetId: !Ref AirflowSubnetId
+      IamInstanceProfile: !Ref AirflowIamInstanceProfileArn
+      SecurityGroupIds:
+        - !Ref AirflowSecurityGroupEC2RDS1
+        - !Ref AirflowSecurityGroupEC2DesktopDev01
+      BlockDeviceMappings:
+        - DeviceName: "/dev/sda1"
+          Ebs:
+            VolumeType: !Ref AirflowTypeOfVolume
+            VolumeSize: !Ref AirflowSizeOfVolume
+            # SnapshotId: !Ref AirflowSnapshotIdForVolume
+      Tags:
+        - Key: Name
+          Value: Airflow
+      EnclaveOptions:
+        Enabled: false
+      HibernationOptions:
+        Configured: false
+      SourceDestCheck: true
+    
+
+# -------------------------------- EC2-message endpoint
+
+  EC2MessagesInterfaceEndpoint:
+    Type: "AWS::EC2::VPCEndpoint"
+    Properties:
+      VpcEndpointType: "Interface"
+      VpcId: !Ref Ec2MessagesVPCId
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.ec2messages"
+      SubnetIds: 
+        - !Ref Ec2MessagesSubnetIdPrivateSubnet1
+        - !Ref Ec2MessagesSubnetIdPrivateSubnet2
+      SecurityGroupIds:
+        - !Ref Ec2MessagesSecurityGroupId
+      # PrivateDnsEnabled: true
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action: '*'
+            Resource: '*'
+
+#----------------------------------- endpoint kms dev01 
+
+  EndpointKMSDev01 :
+    Type: "AWS::EC2::VPCEndpoint"
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: "Allow"
+            Principal: '*'
+            Action: '*'
+            Resource: '*'
+      # PrivateDnsEnabled: true
+      SubnetIds:
+        - !Ref EndpointkmsSubnetId
+      SecurityGroupIds: 
+        - !Ref EndpointkmsSecurityGroupIdsParam
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.kms"
+      VpcEndpointType: "Interface"
+      VpcId: !Ref EndpointkmsVpcId
+
+#----------------------------------- endpoint-s3-dev01
+
+  EndpointS3dev01:
+      Type: AWS::EC2::VPCEndpoint
       Properties:
-        AccessControl: "BucketOwnerFullControl"
-        BucketEncryption:
-          ServerSideEncryptionConfiguration: 
-            - ServerSideEncryptionByDefault:
-                SSEAlgorithm: !Ref SSEAlgorithmPara
-        BucketName: !Ref BucketName
-        ObjectLockEnabled: false
-        OwnershipControls:
-          Rules:
-            - ObjectOwnership: "BucketOwnerPreferred"
-        PublicAccessBlockConfiguration: 
-          BlockPublicAcls: true
-          IgnorePublicAcls: true
-          BlockPublicPolicy: true
-          RestrictPublicBuckets: true
-        Tags: 
-          - Key: "Environment"
-            Value: "Production"
-        VersioningConfiguration: 
-          Status: "Suspended"
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: "Allow"
+              Principal: '*'
+              Action: '*'
+              Resource: '*'
+        PrivateDnsEnabled: false
+        RouteTableIds: 
+          - !Ref Endpoints3RouteTableIdParam
+        ServiceName: !Sub "com.amazonaws.${AWS::Region}.s3"
+        VpcEndpointType: "Gateway"
+        VpcId: !Ref Endpoints3VPCid
+
+
+# ------------------------------------ endpoint-secretmanager-dev01 
+
+  SecretmanagerEndpoint:
+    Type: "AWS::EC2::VPCEndpoint"
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: "Allow"
+            Principal: '*'
+            Action: '*'
+            Resource: '*'
+      # PrivateDnsEnabled: true
+      SubnetIds:
+        - !Ref EndpointsecretmanagerSubnetId
+      SecurityGroupIds: 
+        - !Ref EndpointsecretmanagerSecurityGroupIdsParam
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.secretsmanager"
+      VpcEndpointType: "Interface"
+      VpcId: !Ref EndpointsecretmanagerVpcId
+
+# ------------------------------------ ssm-messages
+
+  SSMMessagesEndpoint:
+    Type: "AWS::EC2::VPCEndpoint"
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: "Allow"
+            Principal: '*'
+            Action: '*'
+            Resource: '*'
+      # PrivateDnsEnabled: true
+      SubnetIds:
+        - !Ref ssmMessagesSubnetId1
+        - !Ref ssmMessagesSubnetId2
+      SecurityGroupIds:
+        - !Ref ssmMessagesSecurityGroupIdsParam
+      ServiceName: !Sub "com.amazonaws.${AWS::Region}.secretsmanager"
+      VpcEndpointType: "Interface"
+      VpcId: !Ref ssmMessagesVpcId
+# -------------------------------------------------------------------------------------
+
+
+  s3fnddev01:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      AccessControl: "BucketOwnerFullControl"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration: 
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: !Ref SSEAlgorithmPara
+      BucketName: !Ref BucketName1
+      ObjectLockEnabled: false
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: "BucketOwnerPreferred"
+      PublicAccessBlockConfiguration: 
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: true
+        RestrictPublicBuckets: true
+      Tags: 
+        - Key: "Environment"
+          Value: "Production"
+      VersioningConfiguration: 
+        Status: "Suspended"
+
+
+# -------------------------------------------------------------------------------------
+
+
+  s3lnddev01:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      AccessControl: "BucketOwnerFullControl"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration: 
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: !Ref SSEAlgorithmPara
+      BucketName: !Ref BucketName2
+      ObjectLockEnabled: false
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: "BucketOwnerPreferred"
+      PublicAccessBlockConfiguration: 
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: true
+        RestrictPublicBuckets: true
+      Tags: 
+        - Key: "Environment"
+          Value: "Production"
+      VersioningConfiguration: 
+        Status: "Suspended"
+
+# -------------------------------------------------------------------------------------
+
+  s3sharedutils:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      AccessControl: "BucketOwnerFullControl"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration: 
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: !Ref SSEAlgorithmPara
+      BucketName: !Ref BucketName3
+      ObjectLockEnabled: false
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: "BucketOwnerPreferred"
+      PublicAccessBlockConfiguration: 
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: true
+        RestrictPublicBuckets: true
+      Tags: 
+        - Key: "Environment"
+          Value: "Production"
+      VersioningConfiguration: 
+        Status: 'Suspended'
+
+# -------------------------------------------------------------------------------------
+
+  s3stgdev01:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      AccessControl: "BucketOwnerFullControl"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration: 
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: !Ref SSEAlgorithmPara
+      BucketName: !Ref BucketName4
+      ObjectLockEnabled: false
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: "BucketOwnerPreferred"
+      PublicAccessBlockConfiguration: 
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: true
+        RestrictPublicBuckets: true
+      Tags: 
+        - Key: "Environment"
+          Value: "Production"
+      VersioningConfiguration: 
+        Status: "Suspended"
+
+# -------------------------------------------------------------------------------------
+
+  RBSDBSubnetGroup:
+    Type: "AWS::RDS::DBSubnetGroup"
+    Properties:
+      DBSubnetGroupDescription: "DB Subnet Group for RDS SQL Server in DEV environment"
+      DBSubnetGroupName: !Ref RDSDBSubnetGroupName
+      SubnetIds: 
+        - !Ref RDSSubnetIds1
+        - !Ref RDSSubnetIds2
+      Tags:
+        - Key: Name
+          Value: datadbsubnetgroupdev01
+
+  ROOTRDSSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties: 
+      GroupDescription: "Security group for RDS instance"
+      GroupName: "rds-access-sg-dev01"
+      VpcId: !Ref VPCId
+      SecurityGroupIngress: 
+        - IpProtocol: "tcp"
+          FromPort: 1433
+          ToPort: 1433
+          CidrIp: "10.61.0.0/21"
+        - IpProtocol: "tcp"
+          FromPort: 1433
+          ToPort: 1433
+          CidrIp: "10.0.2.92/32"
+          Description: "Access from Parth RDP On premise"
+
+  RDSSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties: 
+      GroupDescription: "Created by lambda console"
+      GroupName: "lambda-rds-1"
+      VpcId: !Ref VPCId
+      Tags: 
+        - Key: "Name"
+          Value: "lambda-rds-1"
+
+  SecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !GetAtt ROOTRDSSecurityGroup.GroupId
+      IpProtocol: tcp
+      FromPort: 1433
+      ToPort: 1433
+      SourceSecurityGroupId: !GetAtt RDSSecurityGroup.GroupId
+
+  SecurityGroupEgress:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId: !GetAtt RDSSecurityGroup.GroupId
+      IpProtocol: tcp
+      FromPort: 1433
+      ToPort: 1433
+      DestinationSecurityGroupId: !GetAtt ROOTRDSSecurityGroup.GroupId
+      Description: "Egress rule for allowing lambda function to connect to RDS DB"
+
+  RDSDBInstance:
+    Type: "AWS::RDS::DBInstance"
+    Properties:
+      DBInstanceIdentifier: !Ref RDSDBInstanceIdentifier
+      DBInstanceClass: !Ref DBinstanceClassParameter
+      Engine: "sqlserver-se"  
+      MasterUsername: "admin"
+      MasterUserPassword: !Ref RDSDataMasterUserPassword
+      AllocatedStorage: !Ref RDSAllocatedStorage
+      PreferredBackupWindow: !Ref RDSDataPreferredBackupWindow
+      BackupRetentionPeriod: !Ref RDSDataBackupRetentionPeriod
+      VPCSecurityGroups:
+        - !Ref ROOTRDSSecurityGroup
+      DBParameterGroupName: "default.sqlserver-se-15.0"
+      AvailabilityZone: !Sub "${AWS::Region}a"
+      DBSubnetGroupName: !Ref RDSDBSubnetGroupName
+      PreferredMaintenanceWindow: !Ref RDSPreferredMaintenanceWindow
+      EngineVersion: !Ref RDSEngineVersion
+      AutoMinorVersionUpgrade: true
+      LicenseModel: "license-included"
+      OptionGroupName: "default:sqlserver-se-15-00"
+      CharacterSetName: !Ref RDSCharacterSetName
+      Port: !Ref RDSDataPort
+      PubliclyAccessible: false
+      StorageType: !Ref RDSStorageType
+      MonitoringInterval: 0
+      EnableIAMDatabaseAuthentication: false
+      EnablePerformanceInsights: false
+      StorageEncrypted: true
+      # KmsKeyId: !Ref RDSDatabaseKmsKeyId
+      CopyTagsToSnapshot: true
+      DeletionProtection: false
+      # Tags:
+      #   - Key: "aws:cloudformation:stack-name"
+      #     Value: "rds-setup-dev01"
+        # - Key: "aws:cloudformation:stack-id"
+        #   Value: "arn:aws:cloudformation:us-east-1:867070907590:stack/rds-setup-dev01/48d3d840-4ca2-11ee-aeee-121c7c03ae79"
+        # - Key: "aws:cloudformation:logical-id"
+        #   Value: "RDSDBInstance"
+        # - Key: "VALUE"
+        #   Value: "Auto-Shutdown"
+        # - Key: "KEY"
+        #   Value: "rds-data-dev01"
+
+
+# -----------------------------------------------------------------------------------
+
+  PostgresRBSDBSubnetGroup:
+    Type: "AWS::RDS::DBSubnetGroup"
+    Properties:
+      DBSubnetGroupDescription: "DB Subnet Group for RDS SQL Server in DEV environment"
+      DBSubnetGroupName: !Ref PostgresRDSDBSubnetGroupName
+      SubnetIds: 
+        - !Ref PostgresRDSSubnetIds1
+        - !Ref PostgresRDSSubnetIds2
+
+  DataFabricPostgresSG:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: "Created by RDS management console"
+      GroupName: "data-fabric-postgres-sg"  
+      VpcId: !Ref PostgresVPCId
+      SecurityGroupIngress:
+        - IpProtocol: "tcp"
+          FromPort: 5432
+          ToPort: 5432
+          CidrIp: "49.36.81.19/32"
+      SecurityGroupEgress:
+        - IpProtocol: "-1"
+          CidrIp: "0.0.0.0/0"
+
+  RDSDBPostgresInstance:
+    Type: "AWS::RDS::DBInstance"
+    Properties:
+      DBInstanceIdentifier: !Ref PostgresRDSDBInstanceIdentifier
+      DBInstanceClass: !Ref PostgresDBinstanceClassParameter
+      Engine: "postgres"
+      MasterUsername: "postgres"
+      MasterUserPassword: !Ref PostgresMasterUserPassword
+      AllocatedStorage: !Ref PostgresAllocatedStorage
+      PreferredBackupWindow: !Ref PostgresPreferredBackupWindow
+      BackupRetentionPeriod: !Ref PostgresBackupRetentionPeriod
+      VPCSecurityGroups:
+        - !Ref DataFabricPostgresSG
+      DBParameterGroupName: "default.postgres16"
+      AvailabilityZone: !Sub "${AWS::Region}a"
+      DBSubnetGroupName: !Ref PostgresRDSDBSubnetGroupName
+      PreferredMaintenanceWindow: !Ref PostgresPreferredMaintenanceWindow
+      EngineVersion: !Ref PostgresEngineVersion
+      AutoMinorVersionUpgrade: true
+      LicenseModel: "postgresql-license"
+      OptionGroupName: "default:postgres-16"
+      Port: !Ref PostgresPort
+      PubliclyAccessible: false
+      StorageType: !Ref PostgresStorageType
+      MonitoringInterval: 0
+      EnableIAMDatabaseAuthentication: false
+      EnablePerformanceInsights: true
+      StorageEncrypted: true
+      # KmsKeyId: !Ref PostgresRDSDatabaseKmsKeyId
+      CopyTagsToSnapshot: true
+      DeletionProtection: false
+
+# ----------------------------------------------------------------------------
 
