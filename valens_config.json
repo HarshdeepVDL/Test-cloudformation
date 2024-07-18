@@ -79,7 +79,7 @@
         "EndpointkmsSubnetId": "subnet-0000b785f602f88c6",
         "EndpointkmsSecurityGroupIdsParam": "sg-0fe8398124032e9bf",
         "Endpoints3VPCid": "vpc-0aedf2952ee21c8a8",
-        "Endpoints3RouteTableIdParam": "rtb-0a5960cc95241d3fe",
+        "Endpoints3RouteTableIdParam": "rtb-07798caee4e18a3d3",
         "EndpointsecretmanagerVpcId": "vpc-0aedf2952ee21c8a8",
         "EndpointsecretmanagerSubnetId": "subnet-08dba10f7efcfce74",
         "EndpointsecretmanagerSecurityGroupIdsParam": "sg-0fe8398124032e9bf",
